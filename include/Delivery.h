@@ -2,6 +2,8 @@
 #define DELIVERY_H
 
 #include <M5CoreS3.h>
+#include <Button.h>
+#include <vector>
 
 class Delivery {
 public:
@@ -9,14 +11,17 @@ public:
     int show();
 
 private:
-    struct DeliveryItem {
-        String status;
-        String name;
-        bool delivered;
-    };
-    static const int DELIVERY_ITEMS_SIZE = 4;
-    DeliveryItem deliveryItems[DELIVERY_ITEMS_SIZE];
+    void setupKeypad();
     void drawPage();
+    void handleKeypadInput(int x, int y, String& inputCode);
+    void updateKeypad();
+    void displayInputCode(const String& code);
+    void drawKeypad();
+    void sendDeliveryRequest(const String& janCode);
+    void showCompletionDialog();
+
+    std::vector<Button> keypadButtons;
+    String inputCode;
 };
 
 #endif
