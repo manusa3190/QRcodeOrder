@@ -5,7 +5,7 @@ Delivery::Delivery() {
 }
 
 void Delivery::setupKeypad() {
-    int buttonWidth = 50;
+    int buttonWidth = 64;
     int buttonHeight = 40;
     int startX = 10;
     int startY = 100;
@@ -45,25 +45,23 @@ void Delivery::setupKeypad() {
 int Delivery::show() {
     drawPage();
     inputCode = "";
-    bool wasTouched = false;
 
     while (true) {
         M5.update();
 
         if (M5.Touch.getCount() > 0) {
             auto touch = M5.Touch.getDetail();
-            wasTouched = true;
             for (auto& button : keypadButtons) {
                 if (button.isPressed(touch.x, touch.y)) {
-                    button.update(); // コールバック関数を呼び出す
                     displayInputCode(inputCode);
                     break;
                 }
             }
-        } else if (wasTouched) {
-            // タッチが終了したときの処理
-            wasTouched = false;
-            drawKeypad(); // ボタンを再描画してリセット
+        }
+
+        // 全てのボタンのupdate()メソッドを呼び出す
+        for (auto& button : keypadButtons) {
+            button.update();
         }
 
         // BtnAが押されたらホーム画面に戻る
@@ -74,36 +72,45 @@ int Delivery::show() {
 }
 
 void Delivery::drawPage() {
+    int y = 0;
+
     CoreS3.Display.fillScreen(BLACK);
     CoreS3.Display.setTextColor(WHITE);
     CoreS3.Display.setTextDatum(TL_DATUM);
     CoreS3.Display.setTextSize(2);
-    CoreS3.Display.drawString("納品", 5, 5);
+    CoreS3.Display.drawString("納品", 5, y);
+
+    y += 35;
+
+    CoreS3.Display.drawLine(0, y, CoreS3.Display.width(),y);
+
+    y += 10;
 
     CoreS3.Display.setTextSize(1);
-    CoreS3.Display.drawString("スキャナーまたはキーボードでJANコードを入力ください", 5, 40);
+    CoreS3.Display.drawString("スキャナーまたはキーボードでJANコードを入力ください", 5, y);
 
-    // 入力コード表示枠の描画
-    CoreS3.Display.drawRect(5, 60, CoreS3.Display.width() - 10, 30, WHITE);
+    // 入力コード表示枠はwhile(true)の中で描くため、ここでは描画しない
 
     // キーパッドの描画
-    drawKeypad();
-}
-
-void Delivery::drawKeypad() {
     for (auto& button : keypadButtons) {
         button.draw();
     }
 }
 
 void Delivery::displayInputCode(const String& code) {
-    CoreS3.Display.fillRect(6, 61, CoreS3.Display.width() - 12, 28, BLACK); // 枠内をクリア
+    const int centerY = 80;
+    const int mx = 5;
+    const int px = 5;
+
+    // 入力コード表示枠の描画
+    CoreS3.Display.drawRect(mx,   centerY-15, CoreS3.Display.width() - mx*2,   15*2, WHITE);
+    CoreS3.Display.fillRect(mx+1, centerY-14, CoreS3.Display.width()-(mx+px)*2,14*2, BLACK);
+
     CoreS3.Display.setTextColor(WHITE);
-    CoreS3.Display.setTextDatum(TL_DATUM);
-    CoreS3.Display.drawString(code, 10, 65);
+    CoreS3.Display.setTextDatum(ML_DATUM);
+    CoreS3.Display.setTextSize(2);
+    CoreS3.Display.drawString(code, mx+px, centerY);
 }
-
-
 
 void Delivery::sendDeliveryRequest(const String& janCode) {
     // HTTPリクエストの代わりにシリアル出力
