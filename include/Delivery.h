@@ -13,8 +13,6 @@ public:
 private:
     void setupKeypad();
     void drawPage();
-    void handleKeypadInput(int x, int y, String& inputCode);
-    void updateKeypad();
     void displayInputCode(const String& code);
     void drawKeypad();
     void sendDeliveryRequest(const String& janCode);

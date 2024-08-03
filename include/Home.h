@@ -2,12 +2,13 @@
 #define HOME_H
 
 #include <M5CoreS3.h>
-#include <Button.h> 
+#include <Button.h>
+#include "WiFiManager.h"
 
 class Home {
 public:
     Home();
-    int show();
+    int show(WiFiManager& wifiManager);
 
 private:
     struct OrderItem {

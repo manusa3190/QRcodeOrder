@@ -24,18 +24,30 @@ void Home::setupButtons() {
     );
 }
 
-int Home::show() {
+int Home::show(WiFiManager& wifiManager) {
     drawPage();
     nextPage = 0;
 
     while (true) {
         M5.update();
-        
+        wifiManager.update();
+        wifiManager.handleClient();
+              
         if (M5.Touch.getCount() > 0) {
             auto touch = M5.Touch.getDetail();
+
+            if (wifiManager.handleTouch(touch.x, touch.y)) {
+                // WiFiアイコンがタッチされた場合、ダイアログが表示される
+                continue;
+            }
             newOrderButton.isPressed(touch.x, touch.y);
             deliveryButton.isPressed(touch.x, touch.y);
         }
+
+        // WiFiアイコンを描画
+        wifiManager.drawWiFiIcon();
+
+
         
         newOrderButton.update();
         deliveryButton.update();

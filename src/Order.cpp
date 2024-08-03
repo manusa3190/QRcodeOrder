@@ -66,6 +66,9 @@ int Order::show() {
                     drawPage();
                 }
             }
+
+            scrollUpButton.update();
+            scrollDownButton.update();
         }
 
         // BtnAが押されたら前の画面に戻る
