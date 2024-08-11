@@ -4,21 +4,23 @@
 WiFiManager wifiManager;
 
 AppController::AppController() : currentPage(0) {
-    wifiManager.begin();
+
 }
 
 void AppController::run() {
+    Serial.println("AppController run!");
+    wifiManager.begin();
+
     while (true) {
         CoreS3.update();
-        wifiManager.update();
-        wifiManager.handleClient(); // 新しく追加
 
         switch (currentPage) {
             case 0:
                 currentPage = home.show(wifiManager);
                 break;
             case 1:
-                currentPage = order.show();
+                Serial.println("order show");
+                currentPage = order.show(wifiManager);
                 break;
             case 2:
                 currentPage = delivery.show();

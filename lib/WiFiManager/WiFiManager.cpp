@@ -1,12 +1,15 @@
 #include "WiFiManager.h"
 
 WiFiManager::WiFiManager() : _isConnected(false), apModeActive(false), server(80) {
-    preferences.begin("WiFiCreds", false);
-    ssid = preferences.getString("ssid", "");
-    password = preferences.getString("password", "");
+
 }
 
 void WiFiManager::begin() {
+    Serial.println("WiFiManager begin!");
+    preferences.begin("WiFiCreds", false);
+    ssid = preferences.getString("ssid", "");
+    password = preferences.getString("password", "");
+
     if (ssid != "" && password != "") {
         connectToWiFi();
     }
@@ -20,36 +23,40 @@ void WiFiManager::update() {
 }
 
 void WiFiManager::connectToWiFi() {
+    Serial.println("Attempting to connect to WiFi...");
+    Serial.println("SSID: " + ssid);
+
     WiFi.begin(ssid.c_str(), password.c_str());
     int attempts = 0;
     while (WiFi.status() != WL_CONNECTED && attempts < 10) {
         delay(1000);
+        Serial.print("Attempt ");
+        Serial.print(attempts + 1);
+        Serial.println(" failed. Retrying...");
         attempts++;
     }
     _isConnected = (WiFi.status() == WL_CONNECTED);
+    if (_isConnected) {
+        Serial.println("Connected to WiFi!");
+        Serial.print("IP Address: ");
+        Serial.println(WiFi.localIP());
+    } else {
+        Serial.println("Failed to connect to WiFi.");
+    }
 }
 
 void WiFiManager::drawWiFiIcon() {
-    if (!_isConnected) {
-        CoreS3.Display.setTextSize(2);
-        CoreS3.Display.setTextColor(WHITE);
-        CoreS3.Display.drawString("♨", 290, 10);
-        return;
-    }
-
     int32_t rssi = WiFi.RSSI();
-    int bars = 0;
-    if (rssi > -55) bars = 3;
-    else if (rssi > -70) bars = 2;
-    else if (rssi > -85) bars = 1;
-
-    for (int i = 0; i < 3; i++) {
-        if (i < bars) {
-            CoreS3.Display.fillRect(290 + i*10, 10 + (3-i)*5, 8, 5 + i*5, WHITE);
-        } else {
-            CoreS3.Display.drawRect(290 + i*10, 10 + (3-i)*5, 8, 5 + i*5, WHITE);
-        }
+    String strongness = "圏外";
+    if(_isConnected){
+        if (rssi > -55) strongness = "強";
+        else if (rssi > -70) strongness = "中";
+        else if (rssi > -85) strongness = "弱";
     }
+    CoreS3.Display.setTextSize(1);
+    CoreS3.Display.setTextDatum(TL_DATUM);
+    CoreS3.Display.setTextColor(WHITE);
+    CoreS3.Display.drawString(strongness, 290, 15);
 }
 
 bool WiFiManager::handleTouch(int x, int y) {
@@ -63,18 +70,11 @@ bool WiFiManager::handleTouch(int x, int y) {
 }
 
 void WiFiManager::startAPMode() {
-    Serial.println("Starting AP Mode...");
     WiFi.mode(WIFI_AP);
     WiFi.softAP("M5StackCoreS3", "");
     IPAddress myIP = WiFi.softAPIP();
-    Serial.print("AP IP address: ");
-    Serial.println(myIP);
-
-    Serial.println("Setting up server routes...");
     
     server.on("/", HTTP_GET, [this]() {
-        Serial.println("Received GET request for /");
-
         // WiFiスキャンを実行
         int n = WiFi.scanNetworks();
         Serial.println("Scan done");
@@ -138,7 +138,6 @@ void WiFiManager::startAPMode() {
     });
 
     server.begin();
-    Serial.println("HTTP server started");
     apModeActive = true;
 
     // APモードが開始されたことを画面に表示
@@ -153,7 +152,6 @@ void WiFiManager::startAPMode() {
 void WiFiManager::handleClient() {
     if (apModeActive) {
         server.handleClient();
-        Serial.println("Handling client in AP mode");
     }
 }
 
@@ -177,13 +175,15 @@ void WiFiManager::showWiFiDialog() {
     }
 
     // ボタンを描画
+    CoreS3.Display.setTextDatum(MC_DATUM);
+
     CoreS3.Display.fillRect(70, 140, 80, 30, BLUE);
     CoreS3.Display.drawRect(70, 140, 80, 30, WHITE);
-    CoreS3.Display.drawString("閉じる", 110, 155);
+    CoreS3.Display.drawString("閉じる", 70+80/2, 140+30/2);
 
     CoreS3.Display.fillRect(170, 140, 80, 30, GREEN);
     CoreS3.Display.drawRect(170, 140, 80, 30, WHITE);
-    CoreS3.Display.drawString("接続設定", 210, 155);
+    CoreS3.Display.drawString("接続設定",170+80/2, 140+30/2);
 
     // ユーザーの入力を待つ
     while (true) {
@@ -193,7 +193,7 @@ void WiFiManager::showWiFiDialog() {
             if (touch.y >= 140 && touch.y < 170) {
                 if (touch.x >= 70 && touch.x < 150) {
                     // 「閉じる」ボタンが押された
-                    break;
+                    return;
                 } else if (touch.x >= 170 && touch.x < 250) {
                     // 「接続設定」ボタンが押された
                     startAPMode();

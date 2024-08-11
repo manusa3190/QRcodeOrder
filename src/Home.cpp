@@ -30,9 +30,11 @@ int Home::show(WiFiManager& wifiManager) {
 
     while (true) {
         M5.update();
+        
         wifiManager.update();
         wifiManager.handleClient();
-              
+        wifiManager.drawWiFiIcon();
+
         if (M5.Touch.getCount() > 0) {
             auto touch = M5.Touch.getDetail();
 
@@ -43,11 +45,6 @@ int Home::show(WiFiManager& wifiManager) {
             newOrderButton.isPressed(touch.x, touch.y);
             deliveryButton.isPressed(touch.x, touch.y);
         }
-
-        // WiFiアイコンを描画
-        wifiManager.drawWiFiIcon();
-
-
         
         newOrderButton.update();
         deliveryButton.update();

@@ -4,11 +4,12 @@
 #include <M5CoreS3.h>
 #include <vector>
 #include <Button.h>
+#include "WiFiManager.h"
 
 class Order {
 public:
     Order();
-    int show();
+    int show(WiFiManager& wifiManager);
 
 private:
     struct Item {
@@ -23,6 +24,8 @@ private:
     void setupButtons();
     void scrollUp();
     void scrollDown();
+
+    void fetchItemsFromAppSheet();
 
     Button scrollUpButton;
     Button scrollDownButton;
