@@ -3,6 +3,9 @@
 #include <AppSheet.h>
 #include <secrets.h>
 
+#include <AppController.h> // グローバル変数を利用するためにインクルード
+
+
 Order::Order() : currentItemPage(0) {
     fetchItemsFromAppSheet();
     setupButtons();
@@ -10,7 +13,7 @@ Order::Order() : currentItemPage(0) {
 
 void Order::fetchItemsFromAppSheet() {
     
-    appsheet.begin(APP_ID,ACCESS_KEY);
+    // appsheet.begin(APP_ID,ACCESS_KEY);
 
     const char* TABLE_NAME = "備品マスタ";
     const char* selector = "FILTER('備品マスタ', IN('実験室', [格納場所]))";
@@ -58,6 +61,22 @@ void Order::scrollDown() {
 int Order::show() {
     drawPage();
     fetchItemsFromAppSheet();
+
+    // データの確認
+    for (const auto& item : items) {
+        Serial.println("Item:");
+        Serial.println("  _RowNumber: " + String(item._RowNumber));
+        Serial.println("  RowID: " + item.RowID);
+        Serial.println("  Equipment Code: " + item.equipmentCode);
+        Serial.println("  Equipment Name: " + item.equipmentName);
+        Serial.println("  Store Place: " + item.storePlace);
+        Serial.println("  Price: " + String(item.price));
+        Serial.println("  Order Number: " + item.orderNumber);
+        Serial.println("  Supplier Name: " + item.supplierName);
+        Serial.println("  Related Order Items: " + item.RelatedOrderItems);
+        Serial.println();  // 空行で区切る
+    }
+
 
     while (true) {
         M5.update();
