@@ -4,23 +4,34 @@
 #include <M5CoreS3.h>
 #include <vector>
 #include <Button.h>
-#include "WiFiManager.h"
+#include <WiFiManager.h>
+#include <AppSheet.h>
 
 class Order {
 public:
     Order();
-    int show(WiFiManager& wifiManager);
+    int show();
 
 private:
     struct Item {
-        int id;
-        String name;
+        int _RowNumber;
+        String RowID;
+        String equipmentCode;
+        String equipmentName;
+        String storePlace;
         int price;
+        String orderNumber;
+        String supplierName;
+        String RelatedOrderItems;
     };
+
+    WiFiManager wifiManager;
+
+    AppSheet appsheet;
 
     std::vector<Item> items;
     void drawPage();
-    void showQRCode(int id);
+    void showQRCode(String id);
     void setupButtons();
     void scrollUp();
     void scrollDown();

@@ -5,6 +5,7 @@ Home::Home() : nextPage(0) {
     orderHistory[1] = {"注文済", "2024/7/28", "メモパッド"};
     orderHistory[2] = {"注文済", "2024/7/28", "単三電池 24本入り"};
     orderHistory[3] = {"注文済", "2024/7/14", "ホワイトボードマーカー"};
+    wifiManager.begin();
     setupButtons();
 }
 
@@ -24,7 +25,7 @@ void Home::setupButtons() {
     );
 }
 
-int Home::show(WiFiManager& wifiManager) {
+int Home::show() {
     drawPage();
     nextPage = 0;
 

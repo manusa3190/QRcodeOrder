@@ -1,8 +1,7 @@
-#include "Order.h"
+#include <Order.h>
 #include <Button.h>
-#include <WiFiClientSecure.h>
-#include <ArduinoJson.h>
-#include "WiFiManager.h"
+#include <AppSheet.h>
+#include <secrets.h>
 
 Order::Order() : currentItemPage(0) {
     fetchItemsFromAppSheet();
@@ -10,123 +9,32 @@ Order::Order() : currentItemPage(0) {
 }
 
 void Order::fetchItemsFromAppSheet() {
-    Serial.println("step1");
+    
+    appsheet.begin(APP_ID,ACCESS_KEY);
 
-    WiFiClientSecure client;
-    const char* host = "www.appsheet.com";
-    const int httpsPort = 443;
-    const char* root_ca = "-----BEGIN CERTIFICATE-----\n"
-                      "MIIFNzCCBB+gAwIBAgIRAKq/fVF9bGOEEA7WHTMxyLUwDQYJKoZIhvcNAQELBQAw\n"
-                      "OzELMAkGA1UEBhMCVVMxHjAcBgNVBAoTFUdvb2dsZSBUcnVzdCBTZXJ2aWNlczEM\n"
-                      "MAoGA1UEAxMDV1IzMB4XDTI0MDgwNDAxMDQ0MVoXDTI0MTEwMjAxNTgxNVowFzEV\n"
-                      "MBMGA1UEAxMMYXBwc2hlZXQuY29tMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIB\n"
-                      "CgKCAQEAo2MiS6w815fp8Erl98C3SicQXn85jfTwvvFpkMeIkH8FAUm0cNGMY/8V\n"
-                      "O5RsfZtr3NM2kCiT8pk4Tem9YA+BQxbB7YSbRlOSwS5RDDV3u9BoV2a11SkNcBko\n"
-                      "XLP7NgVeCaAKxyqvIyZq3iu2bLCW8Udw8Vhyqxxe20Q8r18/v3WrV9VEbQAHMrYq\n"
-                      "KMkWYq2UvXw2BvxTAbEIFKNbD7gtw0dsRPHamdzF1LwCJoqnSZ6yHM3cMEphW4N7\n"
-                      "YQNRFVSL3B3eGXpChjMJ4H0AwAlwK0xc2EUQmuxe8t8iRNUT3/zhn1CxL7oC9w//\n"
-                      "o6cMtfoci6M0828vdof5cYnPOuRs1QIDAQABo4ICWDCCAlQwDgYDVR0PAQH/BAQD\n"
-                      "AgWgMBMGA1UdJQQMMAoGCCsGAQUFBwMBMAwGA1UdEwEB/wQCMAAwHQYDVR0OBBYE\n"
-                      "FETsEE1UE1ckLL1exbgcuF1DO2e9MB8GA1UdIwQYMBaAFMeB9f2OiNkAPE1jolAx\n"
-                      "JKDOI/4jMF4GCCsGAQUFBwEBBFIwUDAnBggrBgEFBQcwAYYbaHR0cDovL28ucGtp\n"
-                      "Lmdvb2cvcy93cjMvcXI4MCUGCCsGAQUFBzAChhlodHRwOi8vaS5wa2kuZ29vZy93\n"
-                      "cjMuY3J0MCkGA1UdEQQiMCCCDGFwcHNoZWV0LmNvbYIQd3d3LmFwcHNoZWV0LmNv\n"
-                      "bTATBgNVHSAEDDAKMAgGBmeBDAECATA2BgNVHR8ELzAtMCugKaAnhiVodHRwOi8v\n"
-                      "Yy5wa2kuZ29vZy93cjMvXzdTZFJ0ajJXckkuY3JsMIIBBQYKKwYBBAHWeQIEAgSB\n"
-                      "9gSB8wDxAHYASLDja9qmRzQP5WoC+p0w6xxSActW3SyB2bu/qznYhHMAAAGRGyG/\n"
-                      "8AAABAMARzBFAiEA8vPMjg6Ws+1ZoWKFKQNqGzfsTqIF8IhVGVABCGaoyBkCIAlm\n"
-                      "K4txqiOia34ucqIdhpZGybVs23kNBvqTUFxgmxyNAHcAdv+IPwq2+5VRwmHM9Ye6\n"
-                      "NLSkzbsp3GhCCp/mZ0xaOnQAAAGRGyG//wAABAMASDBGAiEAvT+oAHZWRTtaSHeH\n"
-                      "nLF4CIsXVNeqwNd2cThevXheZ4ECIQDAWUhNRHKb379vwvLajR+FexNYJifNWSTN\n"
-                      "4bNHTH2cOzANBgkqhkiG9w0BAQsFAAOCAQEAGPDHr3JRmY+yv0YypzL0QNpOtjiF\n"
-                      "Lv83YFwXvLUVdIvtvcSOchRCrwJXwxJTQt77yr/Dwh5P1I+iURZwl5eLzkIFp7uJ\n"
-                      "HNKPosar5y1hMPXBDHm1DEYCnRXgMWW2aMN/CJGjQ9sZqDetHFx9jALs24y62vj9\n"
-                      "yo48XzBEG9IL8dwAUxTro13nQAON9n/W+VsdksqzcAyuO9x7APfrdYJpBbpg78tc\n"
-                      "hSrzOS+/9R6ptgQ70EXplg0C9vaVRMvz/Ihe5GN0Gfhc7kct2jXGpfLtA1gKE4By\n"
-                      "CIFnn1TKytd4L1al5pGwAU9PVEuWlm4vhNQL4egtMXLMpkclKVKiPNFaTA==\n"
-                      "-----END CERTIFICATE-----\n";
-    client.setCACert(root_ca);
+    const char* TABLE_NAME = "備品マスタ";
+    const char* selector = "FILTER('備品マスタ', IN('実験室', [格納場所]))";
 
-    Serial.println("step2");
+    DynamicJsonDocument docs = appsheet.getItems(TABLE_NAME,selector);
 
-    if (!client.connect(host, httpsPort)) {
-        Serial.println("Connection failed");
-        return;
+    serializeJsonPretty(docs, Serial);
+
+    for (JsonObject item : docs.as<JsonArray>()) {
+        Item orderItem;
+        orderItem._RowNumber = item["_RowNumber"];
+        orderItem.RowID = item["Row ID"].as<String>();
+        orderItem.equipmentCode = item["備品コード"].as<String>();
+        orderItem.equipmentName = item["備品名"].as<String>();
+        orderItem.storePlace = item["格納場所"].as<String>();
+        orderItem.price = item["価格"];
+        orderItem.orderNumber = item["注文番号"].as<String>();
+        orderItem.supplierName = item["発注先名"].as<String>();
+        orderItem.RelatedOrderItems = item["Related 注文アイテムs"].as<String>();
+        
+        items.push_back(orderItem);
     }
 
-    Serial.println("step3");
-
-    String url = "/api/v2/apps/YOUR_APP_ID/tables/備品マスタ/Action?applicationAccessKey=YOUR_ACCESS_KEY";
-    String payload = "{\"Action\":\"Find\",\"Properties\":{\"Locale\":\"ja-JP\",\"Selector\":\"FILTER('備品マスタ', IN('実験室', [格納場所]))\"}}";
-
-    client.println("POST " + url + " HTTP/1.1");
-    client.println("Host: " + String(host));
-    client.println("Content-Type: application/json");
-    client.println("Content-Length: " + String(payload.length()));
-    client.println("Connection: close");
-    client.println();
-    client.println(payload);
-
-    while (client.connected()) {
-        String line = client.readStringUntil('\n');
-        if (line == "\r") {
-            break;
-        }
-    }
-
-    Serial.println("step3");
-
-    String response = "";
-    while (client.available()) {
-        response += client.readStringUntil('\n');
-    }
-
-    Serial.println("Response: " + response);
-
-    // DynamicJsonDocumentを使用
-    DynamicJsonDocument doc(2048);
-    DeserializationError error = deserializeJson(doc, response.c_str());
-
-    if (error) {
-        Serial.print("deserializeJson() failed: ");
-        Serial.println(error.f_str());
-        return;
-    }
-
-    JsonArray itemsArray = doc["items"].as<JsonArray>();
-    for (JsonObject item : itemsArray) {
-        int id = item["id"];
-        String name = item["name"].as<String>();
-        int price = item["price"];
-        items.push_back({id, name, price});
-    }
 }
-
-// Order::Order() : currentItemPage(0) {
-//     items = {
-//         {1, "黒色ボールペン", 100},
-//         {2, "メモパッド", 200},
-//         {3, "単三電池 24本入り", 1200},
-//         {4, "ホワイトボードマーカー", 300},
-//         {5, "付箋", 150},
-//         {6, "クリップ", 80},
-//         {7, "ホッチキス", 500},
-//         {8, "消しゴム", 50},
-//         {9, "シャープペンシル", 300},
-//         {10, "定規", 100},
-//         {11, "カッターナイフ", 200},
-//         {12, "ハサミ", 400},
-//         {13, "のり", 150},
-//         {14, "テープ", 100},
-//         {15, "ファイル", 250},
-//         {16, "クリアファイル", 80},
-//         {17, "ノート", 200},
-//         {18, "カレンダー", 500},
-//         {19, "電卓", 1000},
-//         {20, "蛍光ペン", 150}
-//     };
-//     setupButtons();
-// }
 
 void Order::setupButtons() {
     scrollUpButton = Button("▲", 280, 40, 30, 30, [this]() { scrollUp(); }, WHITE, BLACK, 1);
@@ -147,10 +55,9 @@ void Order::scrollDown() {
     }
 }
 
-int Order::show(WiFiManager& wifiManager) {
-    fetchItemsFromAppSheet();
-
+int Order::show() {
     drawPage();
+    fetchItemsFromAppSheet();
 
     while (true) {
         M5.update();
@@ -169,7 +76,7 @@ int Order::show(WiFiManager& wifiManager) {
                 // アイテムの選択処理
                 int index = touch.y / 50;
                 if (index < items.size()) {
-                    showQRCode(items[index].id);
+                    showQRCode(items[index].equipmentCode);
                     drawPage();
                 }
             }
@@ -206,7 +113,7 @@ void Order::drawPage() {
     int endIndex = std::min(startIndex + 6, static_cast<int>(items.size()));
     for (int i = startIndex; i < endIndex; i++) {
         const auto& item = items[i];
-        CoreS3.Display.drawString(item.name, 10, y);
+        CoreS3.Display.drawString(item.equipmentName, 10, y);
         CoreS3.Display.drawString("¥" + String(item.price), 200, y);
         y += 30;
     }
@@ -216,7 +123,7 @@ void Order::drawPage() {
     scrollDownButton.draw();
 }
 
-void Order::showQRCode(int id) {
+void Order::showQRCode(String id) {
     bool shouldClose = false;  // ダイアログを閉じるためのフラグ
 
     const int mx = 50;
@@ -230,7 +137,7 @@ void Order::showQRCode(int id) {
     CoreS3.Display.fillRect(mx+2,my+2,dialogW-4,dialogH-4, BLUE);
 
     CoreS3.Display.setColor(WHITE);
-    CoreS3.Display.qrcode(String(id), mx+p,my+p,std::min(dialogW,dialogH)-p*2,6);
+    CoreS3.Display.qrcode(id, mx+p,my+p,std::min(dialogW,dialogH)-p*2,6);
 
     // 閉じるボタンの作成
     Button closeButton(

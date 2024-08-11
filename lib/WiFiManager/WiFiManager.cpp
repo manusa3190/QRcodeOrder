@@ -53,6 +53,9 @@ void WiFiManager::drawWiFiIcon() {
         else if (rssi > -70) strongness = "中";
         else if (rssi > -85) strongness = "弱";
     }
+
+    CoreS3.Display.fillRect(290,15,30,16,BLACK);
+
     CoreS3.Display.setTextSize(1);
     CoreS3.Display.setTextDatum(TL_DATUM);
     CoreS3.Display.setTextColor(WHITE);
