@@ -12,7 +12,7 @@ AppController::AppController() : currentPage(0) {
 
 void AppController::run() {
     Serial.println("AppController run!");
-    wifiManager.begin();    
+
     appsheet.begin(APP_ID,ACCESS_KEY);
 
     while (true) {
@@ -28,6 +28,8 @@ void AppController::run() {
             case 2:
                 currentPage = delivery.show();
                 break;
+            // case 3:
+            //     currentPage = setting.show();
         }
     }
 }

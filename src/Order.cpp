@@ -9,14 +9,19 @@ Order::Order() : currentItemPage(0) {
 }
 
 void Order::fetchItemsFromAppSheet() {
-    
+    // 既にitemsにデータが格納されているなら早期リターン
+    if(!items.empty())return;
+
+    Serial.println("start");
+
     appsheet.begin(APP_ID,ACCESS_KEY);
 
     const char* TABLE_NAME = "備品マスタ";
     const char* selector = "FILTER('備品マスタ', IN('実験室', [格納場所]))";
 
-    DynamicJsonDocument docs = appsheet.getItems(TABLE_NAME,selector);
+    JsonDocument docs = appsheet.getItems(TABLE_NAME,selector);
 
+    Serial.println("fetchItemsFromAppSheet");
     serializeJsonPretty(docs, Serial);
 
     for (JsonObject item : docs.as<JsonArray>()) {
@@ -56,15 +61,30 @@ void Order::scrollDown() {
 }
 
 int Order::show() {
-    drawPage();
     fetchItemsFromAppSheet();
+    drawPage();
+
+    // データの確認
+    for (const auto& item : items) {
+        Serial.println("Item:");
+        Serial.println("  _RowNumber: " + String(item._RowNumber));
+        Serial.println("  RowID: " + item.RowID);
+        Serial.println("  Equipment Code: " + item.equipmentCode);
+        Serial.println("  Equipment Name: " + item.equipmentName);
+        Serial.println("  Store Place: " + item.storePlace);
+        Serial.println("  Price: " + String(item.price));
+        Serial.println("  Order Number: " + item.orderNumber);
+        Serial.println("  Supplier Name: " + item.supplierName);
+        Serial.println("  Related Order Items: " + item.RelatedOrderItems);
+        Serial.println();  // 空行で区切る
+    }
 
     while (true) {
         M5.update();
 
         wifiManager.update();
         wifiManager.handleClient();
-        wifiManager.drawWiFiIcon();
+        // wifiManager.drawWiFiIcon();
 
         if (M5.Touch.getCount() > 0) {
             auto touch = M5.Touch.getDetail();

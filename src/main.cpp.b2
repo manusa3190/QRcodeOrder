@@ -4,27 +4,45 @@
 #include <AppSheet.h>
 #include <secrets.h>
 
-AppSheet appsheet;
+#include <Preferences.h>
+
+#include <iostream>
+#include <unordered_map>
+
+// AppSheet appsheet;
+
+struct MyObject {
+    String name;
+    int age;
+    String job;
+};
 
 void setup() {
-  Serial.begin(115200);
+  Serial.begin(9600);
   
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   while (WiFi.status() != WL_CONNECTED) {
     delay(1000);
     Serial.println("Connecting to WiFi...");
   }
+
+  Preferences preferences;
+
+  preferences.begin("WiFiCreds", false);
+
+  preferences.putString("ssid", WIFI_SSID);
+  preferences.putString("password", WIFI_PASSWORD);
   
   Serial.println("Connected to WiFi");
 
-  appsheet.begin(APP_ID,ACCESS_KEY);
+  // appsheet.begin(APP_ID,ACCESS_KEY);
 
-  const char* TABLE_NAME = "備品マスタ";
-  const char* selector = "FILTER('備品マスタ', IN('実験室', [格納場所]))";
+  // const char* TABLE_NAME = "備品マスタ";
+  // const char* selector = "FILTER('備品マスタ', IN('実験室', [格納場所]))";
 
-  DynamicJsonDocument items = appsheet.getItems(TABLE_NAME,selector);
+  // DynamicJsonDocument items = appsheet.getItems(TABLE_NAME,selector);
 
-  serializeJsonPretty(items, Serial);
+  // serializeJsonPretty(items, Serial);
 
 }
 

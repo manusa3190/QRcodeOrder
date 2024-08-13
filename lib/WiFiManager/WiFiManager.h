@@ -9,7 +9,6 @@
 class WiFiManager {
 public:
     WiFiManager();
-    void begin();
     void update();
     void drawWiFiIcon();
     bool isConnected() const { return _isConnected; }
@@ -19,18 +18,22 @@ public:
     void handleClient();
 
 private:
-    String ssid;
-    String password;
     Preferences preferences;
     bool _isConnected;
     void connectToWiFi();
     void drawWiFiSignalStrength();
 
+    // 接続トライ
+    unsigned long previousTryMillis = 0;
+
+    // RSSI強度を1秒おきに更新するために使用
+    unsigned long previousMillis = 0;
+
     // アイコンの位置とサイズ
-    static const int ICON_X = 300;
-    static const int ICON_Y = 10;
-    static const int ICON_WIDTH = 20;
-    static const int ICON_HEIGHT = 20;
+    static const int ICON_X = 290;
+    static const int ICON_Y = 15;
+    static const int ICON_WIDTH = 30;
+    static const int ICON_HEIGHT = 16;
 
     WebServer server;
     bool apModeActive;

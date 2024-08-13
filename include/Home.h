@@ -22,6 +22,7 @@ private:
     Button newOrderButton;
     Button deliveryButton;
     void drawPage();
+    void fetchOrderHistory();
     void setupButtons();
     int nextPage; 
 };

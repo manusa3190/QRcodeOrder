@@ -1,11 +1,14 @@
 #include "Home.h"
+#include <AppSheet.h>
+
+// AppSheetのインスタンスは外部で定義されていることを想定
+extern AppSheet appsheet;
 
 Home::Home() : nextPage(0) {
-    orderHistory[0] = {"注文待", "", "黒色ボールペン"};
-    orderHistory[1] = {"注文済", "2024/7/28", "メモパッド"};
-    orderHistory[2] = {"注文済", "2024/7/28", "単三電池 24本入り"};
-    orderHistory[3] = {"注文済", "2024/7/14", "ホワイトボードマーカー"};
-    wifiManager.begin();
+    // orderHistory[0] = {"注文待", "", "黒色ボールペン"};
+    // orderHistory[1] = {"注文済", "2024/7/28", "メモパッド"};
+    // orderHistory[2] = {"注文済", "2024/7/28", "単三電池 24本入り"};
+    // orderHistory[3] = {"注文済", "2024/7/14", "ホワイトボードマーカー"};
     setupButtons();
 }
 
@@ -14,7 +17,7 @@ void Home::setupButtons() {
         "新規注文",
         20, 200, 120, 30,
         [this]() { nextPage = 1; },
-        BLUE, WHITE, 1.4
+        WHITE, WHITE, 1.4
     );
 
     deliveryButton = Button(
@@ -26,15 +29,19 @@ void Home::setupButtons() {
 }
 
 int Home::show() {
+    wifiManager.update();
+    fetchOrderHistory(); // DBからデータを取得してorderHistoryにセット
+
     drawPage();
     nextPage = 0;
+
+    bool showSomeDialog = false;
 
     while (true) {
         M5.update();
         
-        wifiManager.update();
         wifiManager.handleClient();
-        wifiManager.drawWiFiIcon();
+        wifiManager.update();
 
         if (M5.Touch.getCount() > 0) {
             auto touch = M5.Touch.getDetail();
@@ -51,8 +58,34 @@ int Home::show() {
         deliveryButton.update();
 
         if (nextPage != 0) {
+            Serial.println("ページ遷移!");
             return nextPage;  // ページ遷移
         }
+    }
+}
+
+void Home::fetchOrderHistory() {
+    const char* TABLE_NAME = "注文アイテム";
+    const char* selector = "FILTER('注文アイテム', ([場所名]='居室'))";
+
+    JsonDocument docs = appsheet.getItems(TABLE_NAME, selector);
+
+    serializeJsonPretty( docs , Serial);
+
+    JsonArray array = docs.as<JsonArray>();
+    int index = 0;
+
+    for (JsonObject item : array) {
+        if (index >= ORDER_HISTORY_SIZE) break; // orderHistoryのサイズを超えた場合はループを終了
+        orderHistory[index].status = item["status"].as<String>();
+        orderHistory[index].date = item["date"].as<String>();
+        orderHistory[index].name = item["name"].as<String>();
+        index++;
+    }
+
+    // 取得データがORDER_HISTORY_SIZEに満たない場合は、残りを空にする
+    for (int i = index; i < ORDER_HISTORY_SIZE; i++) {
+        orderHistory[i] = {"", "", ""};
     }
 }
 
