@@ -5,6 +5,10 @@
 #include "Order.h"
 #include "Delivery.h"
 
+#include "AppSheet.h" // AppSheetのヘッダーをインクルード
+
+extern AppSheet appsheet; // グローバル変数の宣言
+
 class AppController {
 public:
     AppController();

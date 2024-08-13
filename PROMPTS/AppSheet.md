@@ -15,8 +15,8 @@ struct Item {
 };
 
 void setup(){
-  const char* APP_ID = "7b6b4413-ec3a-4d5d-b9d0-918c175e4487";
-  const char* ACCESS_KEY = "V2-hapij-FMGbT-1rmp9-rEdZ6-BAF9C-UNfTv-mxMl1-gwaPa";
+  const char* APP_ID = "7b6b4413-ec3a-****-************";
+  const char* ACCESS_KEY = "V2-************************";
   appsheet.begin(App_ID, ACCESS_KEY);
 
   items:Item[];
@@ -69,11 +69,11 @@ void setup(){
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 
-const char* ssid = "9QHO794U-2.4G";
-const char* password = "24622582";
+const char* ssid = "************";
+const char* password = "********";
 
-const char* APP_ID = "7b6b4413-ec3a-4d5d-b9d0-918c175e4487";
-const char* ACCESS_KEY = "V2-hapij-FMGbT-1rmp9-rEdZ6-BAF9C-UNfTv-mxMl1-gwaPa";
+const char* APP_ID = "7b6b4413-ec3a-****-************";
+const char* ACCESS_KEY = "V2-************************";
 
 void setup() {
   Serial.begin(115200);

@@ -27,7 +27,7 @@ private:
     unsigned long previousTryMillis = 0;
 
     // RSSI強度を1秒おきに更新するために使用
-    unsigned long previousMillis = 0;
+    unsigned long previousCheckMillis = 0;
 
     // アイコンの位置とサイズ
     static const int ICON_X = 290;

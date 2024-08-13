@@ -11,18 +11,24 @@ public:
     int show();
 
 private:
-    struct OrderItem {
-        String status;
-        String date;
-        String name;
+    struct OrderedItem {
+        String ItemCode;
+        String OrderState;
+        String ItemName;
     };
+    static const int ORDER_HISTORY_SIZE = 5;
+    OrderedItem orderedItems[ORDER_HISTORY_SIZE];
+
+
+    unsigned long previousFetchMillis = 0;
+    bool fetchOrderHistory(); //更新があればtrue、なければfalse
+    void drawOrderedItems();
+
     WiFiManager wifiManager;
-    static const int ORDER_HISTORY_SIZE = 4;
-    OrderItem orderHistory[ORDER_HISTORY_SIZE];
     Button newOrderButton;
     Button deliveryButton;
     void drawPage();
-    void fetchOrderHistory();
+
     void setupButtons();
     int nextPage; 
 };

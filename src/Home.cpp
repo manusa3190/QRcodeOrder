@@ -5,10 +5,6 @@
 extern AppSheet appsheet;
 
 Home::Home() : nextPage(0) {
-    // orderHistory[0] = {"注文待", "", "黒色ボールペン"};
-    // orderHistory[1] = {"注文済", "2024/7/28", "メモパッド"};
-    // orderHistory[2] = {"注文済", "2024/7/28", "単三電池 24本入り"};
-    // orderHistory[3] = {"注文済", "2024/7/14", "ホワイトボードマーカー"};
     setupButtons();
 }
 
@@ -29,9 +25,6 @@ void Home::setupButtons() {
 }
 
 int Home::show() {
-    wifiManager.update();
-    fetchOrderHistory(); // DBからデータを取得してorderHistoryにセット
-
     drawPage();
     nextPage = 0;
 
@@ -42,6 +35,9 @@ int Home::show() {
         
         wifiManager.handleClient();
         wifiManager.update();
+
+        bool hasUpdate = fetchOrderHistory(); // DBからデータを取得してorderHistoryにセット
+        if(hasUpdate)drawOrderedItems();
 
         if (M5.Touch.getCount() > 0) {
             auto touch = M5.Touch.getDetail();
@@ -64,7 +60,19 @@ int Home::show() {
     }
 }
 
-void Home::fetchOrderHistory() {
+bool Home::fetchOrderHistory() {
+    // 前回同期から5秒以上経過していたらfetch
+    if(millis() - previousFetchMillis < 5000)return false;
+    previousFetchMillis = millis();
+
+    // データの更新があるか判定するため、現在取得しているデータのトップのコードをメモ
+    // String oldItemsTopCode = "";
+    // if(orderedItems.size() > 0){
+    //     oldItemsTopCode = orderedItems[0].ItemCode;
+    // }
+    String oldItemsTopCode = orderedItems[0].ItemCode;
+
+
     const char* TABLE_NAME = "注文アイテム";
     const char* selector = "FILTER('注文アイテム', ([場所名]='居室'))";
 
@@ -72,21 +80,40 @@ void Home::fetchOrderHistory() {
 
     serializeJsonPretty( docs , Serial);
 
-    JsonArray array = docs.as<JsonArray>();
+    JsonArray items = docs.as<JsonArray>();
     int index = 0;
 
-    for (JsonObject item : array) {
+    for (JsonObject item : items) {
         if (index >= ORDER_HISTORY_SIZE) break; // orderHistoryのサイズを超えた場合はループを終了
-        orderHistory[index].status = item["status"].as<String>();
-        orderHistory[index].date = item["date"].as<String>();
-        orderHistory[index].name = item["name"].as<String>();
+        orderedItems[index].OrderState = item["注文状態"].as<String>();
+        orderedItems[index].ItemName = item["備品名"].as<String>();
+        orderedItems[index].ItemCode = item["アイテムコード"].as<String>();
         index++;
     }
 
     // 取得データがORDER_HISTORY_SIZEに満たない場合は、残りを空にする
     for (int i = index; i < ORDER_HISTORY_SIZE; i++) {
-        orderHistory[i] = {"", "", ""};
+        orderedItems[i] = {"", "", ""};
     }
+
+    return orderedItems[0].ItemCode == oldItemsTopCode;
+}
+
+void Home::drawOrderedItems(){
+    // 画面上にオーダーを描画
+    int y = 50;
+    CoreS3.Display.setTextSize(1);
+    CoreS3.Display.setTextDatum(ML_DATUM);
+    int rowHeight = 20;
+    for (int i = 0; i < ORDER_HISTORY_SIZE; i++) {
+        String status = orderedItems[i].OrderState;
+
+        CoreS3.Display.fillRoundRect(10,y,70,rowHeight, rowHeight/2 ,status=="注文待"? BLUE:TFT_ORANGE);
+        CoreS3.Display.drawString(status,               20,y+rowHeight/2);
+        CoreS3.Display.drawString(orderedItems[i].ItemName, 90,y+rowHeight/2);
+        
+        y += rowHeight + 10;
+    }    
 }
 
 void Home::drawPage() {
@@ -101,21 +128,6 @@ void Home::drawPage() {
     y +=35;
 
     CoreS3.Display.drawLine(0, y, CoreS3.Display.width(),y);
-
-    y +=15;
-
-    CoreS3.Display.setTextSize(1);
-    CoreS3.Display.setTextDatum(ML_DATUM);
-    int rowHeight = 20;
-    for (int i = 0; i < ORDER_HISTORY_SIZE; i++) {
-        String status = orderHistory[i].status;
-
-        CoreS3.Display.fillRoundRect(10,y,70,rowHeight, rowHeight/2 ,status=="注文待"? BLUE:TFT_ORANGE);
-        CoreS3.Display.drawString(status,               20,y+rowHeight/2);
-        CoreS3.Display.drawString(orderHistory[i].name, 90,y+rowHeight/2);
-        
-        y += rowHeight + 10;
-    }
 
     newOrderButton.draw();
     deliveryButton.draw();

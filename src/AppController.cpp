@@ -28,8 +28,6 @@ void AppController::run() {
             case 2:
                 currentPage = delivery.show();
                 break;
-            // case 3:
-            //     currentPage = setting.show();
         }
     }
 }

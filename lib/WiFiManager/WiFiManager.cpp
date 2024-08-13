@@ -6,11 +6,8 @@ WiFiManager::WiFiManager() : _isConnected(false), apModeActive(false), server(80
 
 void WiFiManager::update() {
     // 更新は最低1秒は空ける
-    unsigned long currentTryMillis = millis();
-    if(currentTryMillis - previousMillis < 1000){
-        return;
-    }
-    previousMillis = currentTryMillis;
+    if(millis() - previousTryMillis < 1000)return;
+    previousTryMillis = millis();
 
     // APモードの時はWiFi接続にトライしない
     if(apModeActive)return;
