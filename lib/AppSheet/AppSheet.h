@@ -14,11 +14,11 @@ class AppSheet {
 
   public:
     void begin(const char* APP_ID, const char* ACCESS_KEY);
-    DynamicJsonDocument getItems(const char* tableName, const char* selector);
-    void addItems(const char* tableName, DynamicJsonDocument& newItems);
-    DynamicJsonDocument updateItem(const char* tableName, DynamicJsonDocument& updatedItem);
-    DynamicJsonDocument setItem(const char* tableName, DynamicJsonDocument& newItem);
-    void deleteItem(const char* tableName, DynamicJsonDocument& targetItem);
+    JsonDocument getItems(const char* tableName, const char* selector);
+    void addItems(const char* tableName, JsonDocument& newItems);
+    JsonDocument updateItem(const char* tableName, JsonDocument& updatedItem);
+    JsonDocument setItem(const char* tableName, JsonDocument& newItem);
+    void deleteItem(const char* tableName, JsonDocument& targetItem);
 };
 
 #endif

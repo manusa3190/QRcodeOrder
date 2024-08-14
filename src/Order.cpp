@@ -19,7 +19,7 @@ void Order::fetchItemsFromAppSheet() {
     const char* TABLE_NAME = "備品マスタ";
     const char* selector = "FILTER('備品マスタ', IN('実験室', [格納場所]))";
 
-    DynamicJsonDocument docs = appsheet.getItems(TABLE_NAME,selector);
+    JsonDocument docs = appsheet.getItems(TABLE_NAME,selector);
 
     Serial.println("fetchItemsFromAppSheet");
     serializeJsonPretty(docs, Serial);
