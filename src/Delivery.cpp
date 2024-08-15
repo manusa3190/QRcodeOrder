@@ -1,4 +1,5 @@
 #include "Delivery.h"
+#include <AppController.h>
 
 Delivery::Delivery() {
     setupKeypad();
@@ -48,6 +49,25 @@ int Delivery::show() {
 
     while (true) {
         M5.update();
+
+        // QRコードスキャナーで読み取られると起きるイベント
+        if (qrcode.getDecodeReadyStatus() == 1) {
+            // データを取得
+            uint8_t buffer[512] = {0};
+            uint16_t length     = qrcode.getDecodeLength();
+            Serial.printf("len:%d\r\n", length);
+            qrcode.getDecodeData(buffer, length);
+            
+            // bufferの内容をdataに追加
+            String data;
+            for (int i = 0; i < length; i++) {
+                data += (char)buffer[i]; 
+            }
+
+            Serial.println("decode data:" + data);
+            inputCode = data;
+            displayInputCode(inputCode);
+        }
 
         if (M5.Touch.getCount() > 0) {
             auto touch = M5.Touch.getDetail();

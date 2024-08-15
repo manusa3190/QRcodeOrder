@@ -7,7 +7,7 @@
 AppController app;
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
 
   auto cfg = M5.config();
   M5.begin(cfg);

@@ -5,9 +5,14 @@
 #include "Order.h"
 #include "Delivery.h"
 
-#include "AppSheet.h" // AppSheetのヘッダーをインクルード
+// AppSheet
+#include <AppSheet.h>
+extern AppSheet appsheet;
 
-extern AppSheet appsheet; // グローバル変数の宣言
+// QRコードリーダー
+#include <M5UnitQRCode.h>
+#define UNIT_QRCODE_ADDR 0x21
+extern M5UnitQRCodeI2C qrcode;
 
 class AppController {
 public:
