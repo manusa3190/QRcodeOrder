@@ -16,7 +16,7 @@ private:
     void displayInputCode(const String& code);
     void drawKeypad();
     void sendDeliveryRequest(const String& janCode);
-    void showCompletionDialog();
+    void showCompletionDialog(const String& message);
 
     bool loading = false;
 

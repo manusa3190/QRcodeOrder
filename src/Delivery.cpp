@@ -165,14 +165,16 @@ void Delivery::sendDeliveryRequest(const String& janCode) {
         HttpResponse res = appsheet.updateItem("注文アイテム",itemDoc);
 
         if(res.code == 200){
-            showCompletionDialog();        
+            showCompletionDialog("納品処理しました");
+            inputCode = "";
         }else{
+            showCompletionDialog("エラーが発生しました");
             serializeJsonPretty(res.result, Serial);
         }
     }
 }
 
-void Delivery::showCompletionDialog() {
+void Delivery::showCompletionDialog(const String& message) {
     const int dialogW = 240;
     const int dialogH = 100;
     const int dialogX = (CoreS3.Display.width() - dialogW) / 2;
@@ -183,7 +185,7 @@ void Delivery::showCompletionDialog() {
 
     CoreS3.Display.setTextColor(WHITE);
     CoreS3.Display.setTextDatum(MC_DATUM);
-    CoreS3.Display.drawString("納品しました", dialogX + dialogW / 2, dialogY + dialogH / 2);
+    CoreS3.Display.drawString(message, dialogX + dialogW / 2, dialogY + dialogH / 2);
 
     delay(2000); // 2秒間表示
 
