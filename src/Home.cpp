@@ -72,13 +72,16 @@ bool Home::fetchOrderHistory() {
     // }
     String oldItemsTopCode = orderedItems[0].ItemCode;
 
-
-    const char* TABLE_NAME = "注文アイテム";
     const char* selector = "FILTER('注文アイテム', ([場所名]='居室'))";
 
-    JsonDocument docs = appsheet.getItems(TABLE_NAME, selector);
+    HttpResponse res = appsheet.getItems("注文アイテム", selector);
 
-    serializeJsonPretty( docs , Serial);
+    if(res.code != 200){
+        serializeJsonPretty(res.result, Serial);
+        return true;
+    }
+
+    JsonDocument docs = res.result;
 
     JsonArray items = docs.as<JsonArray>();
     int index = 0;

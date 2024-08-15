@@ -18,6 +18,8 @@ private:
     void sendDeliveryRequest(const String& janCode);
     void showCompletionDialog();
 
+    bool loading = false;
+
     std::vector<Button> keypadButtons;
     String inputCode;
 };

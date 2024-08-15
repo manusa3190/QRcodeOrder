@@ -55,7 +55,6 @@ int Delivery::show() {
             // データを取得
             uint8_t buffer[512] = {0};
             uint16_t length     = qrcode.getDecodeLength();
-            Serial.printf("len:%d\r\n", length);
             qrcode.getDecodeData(buffer, length);
             
             // bufferの内容をdataに追加
@@ -64,7 +63,6 @@ int Delivery::show() {
                 data += (char)buffer[i]; 
             }
 
-            Serial.println("decode data:" + data);
             inputCode = data;
             displayInputCode(inputCode);
         }
@@ -79,7 +77,7 @@ int Delivery::show() {
             }
         }
 
-        // 全てのボタンのupdate()メソッドを呼び出す
+        // 全てのボタンのupdate()メソッドを呼び出すことで、ボタンの色をもとに戻す
         for (auto& button : keypadButtons) {
             button.update();
         }
@@ -133,11 +131,24 @@ void Delivery::displayInputCode(const String& code) {
 }
 
 void Delivery::sendDeliveryRequest(const String& janCode) {
+    // なぜか1回のタップで3回実行されてしまうので、2回目と3回目はスルーする
+    loading = !loading;
+    if (!loading) return;
+
     // HTTPリクエストの代わりにシリアル出力
     Serial.println("Delivery request for JAN code: " + janCode);
 
+    JsonDocument newItem6;
+    newItem6["アイテムコード"] = "item0006";
+    newItem6["注文状態"] = "納品済";
+
     // 納品完了ダイアログの表示
-    showCompletionDialog();
+    HttpResponse res = appsheet.addItem("注文アイテム",newItem6);
+    if(res.code == 200){
+        showCompletionDialog();
+    }else{
+        serializeJsonPretty(res.result, Serial);
+    }
 }
 
 void Delivery::showCompletionDialog() {
@@ -155,6 +166,5 @@ void Delivery::showCompletionDialog() {
 
     delay(2000); // 2秒間表示
 
-    // ダイアログを消す
-    drawPage(); // 元の画面を再描画
+    drawPage();
 }

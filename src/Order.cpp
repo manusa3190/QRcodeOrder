@@ -19,12 +19,17 @@ void Order::fetchItemsFromAppSheet() {
     const char* TABLE_NAME = "備品マスタ";
     const char* selector = "FILTER('備品マスタ', IN('実験室', [格納場所]))";
 
-    JsonDocument docs = appsheet.getItems(TABLE_NAME,selector);
+    HttpResponse res = appsheet.getItems(TABLE_NAME,selector);
+
+    if(res.code != 200){
+        serializeJsonPretty(res.result, Serial);
+        return;
+    }
 
     Serial.println("fetchItemsFromAppSheet");
-    serializeJsonPretty(docs, Serial);
+    serializeJsonPretty(res.result, Serial);
 
-    for (JsonObject item : docs.as<JsonArray>()) {
+    for (JsonObject item : res.result.as<JsonArray>()) {
         Item orderItem;
         orderItem._RowNumber = item["_RowNumber"];
         orderItem.RowID = item["Row ID"].as<String>();
