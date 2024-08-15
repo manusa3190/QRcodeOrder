@@ -16,6 +16,11 @@ AppController::AppController() : currentPage(0) {
 void AppController::run() {
     Serial.println("AppController run!");
 
+    wifiManager.begin();
+    if(WiFi.status() == WL_CONNECTED){
+        configTime(0, 0, "pool.ntp.org", "time.nist.gov");
+    }
+
     // appsheetのセットアップ。APP_IDおよびACCESS_KEYはsecret.hに格納している
     appsheet.begin(APP_ID,ACCESS_KEY);
 

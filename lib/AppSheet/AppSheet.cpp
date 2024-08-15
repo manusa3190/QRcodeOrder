@@ -73,9 +73,7 @@ HttpResponse AppSheet::getItems(const char* tableName, const char* selector) {
     String url = getBaseUrl(tableName);
     JsonDocument payload;
     payload["Action"] = "Find";
-    JsonObject properties =
-    
-    payload["Properties"].to<JsonObject>();
+    JsonObject properties = payload["Properties"].to<JsonObject>();
     properties["Locale"] = "ja-JP";
     properties["Selector"] = selector;
 

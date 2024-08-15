@@ -1,5 +1,6 @@
 #include "Delivery.h"
 #include <AppController.h>
+#include <time.h>
 
 Delivery::Delivery() {
     setupKeypad();
@@ -135,19 +136,39 @@ void Delivery::sendDeliveryRequest(const String& janCode) {
     loading = !loading;
     if (!loading) return;
 
-    // HTTPリクエストの代わりにシリアル出力
     Serial.println("Delivery request for JAN code: " + janCode);
 
-    JsonDocument newItem6;
-    newItem6["アイテムコード"] = "item0006";
-    newItem6["注文状態"] = "納品済";
+    char selector[256];
+    sprintf(selector, "Top( OrderBy( Filter( 注文アイテム, [JANコード] = %s ), [作成日時], true ), 1)", janCode);
 
-    // 納品完了ダイアログの表示
-    HttpResponse res = appsheet.addItem("注文アイテム",newItem6);
+    HttpResponse res = appsheet.getItems("注文アイテム",selector);
+
     if(res.code == 200){
-        showCompletionDialog();
-    }else{
-        serializeJsonPretty(res.result, Serial);
+        JsonObject item = res.result[0].as<JsonObject>();
+        // serializeJsonPretty(item,Serial);
+
+        // 現在時刻を取得し、datetimeの文字列フォーマットにする
+        time_t now;
+        struct tm timeinfo;
+        char datetime[20];
+
+        time(&now); 
+        localtime_r(&now, &timeinfo);
+        strftime(datetime, sizeof(datetime), "%m/%d/%Y %H:%M:%S", &timeinfo);
+
+        JsonDocument itemDoc;
+        itemDoc["アイテムコード"] = item["アイテムコード"];
+        itemDoc["注文状態"] = "納品済";
+        itemDoc["更新日時"] = datetime;
+        serializeJsonPretty(itemDoc,Serial);
+
+        HttpResponse res = appsheet.updateItem("注文アイテム",itemDoc);
+
+        if(res.code == 200){
+            showCompletionDialog();        
+        }else{
+            serializeJsonPretty(res.result, Serial);
+        }
     }
 }
 

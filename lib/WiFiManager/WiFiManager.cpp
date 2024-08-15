@@ -4,6 +4,33 @@ WiFiManager::WiFiManager() : _isConnected(false), apModeActive(false), server(80
 
 }
 
+void WiFiManager::begin() {
+    if(WiFi.status() == WL_CONNECTED)return;
+
+    // ssidまたはpasswordが定義されていないなら何もしない
+    preferences.begin("WiFiCreds", false);
+    String ssid = preferences.getString("ssid", "");
+    String password = preferences.getString("password", "");
+    if(ssid == "" || password == ""){
+        Serial.println("ssid or password is not defined!");
+        return;
+    }
+
+    Serial.println("ssid: "+ ssid);
+    Serial.println("password: "+ password);
+    Serial.print("try to connect WiFi .");
+
+    WiFi.begin(ssid, password);
+
+    int count = 0;
+    while (WiFi.status() != WL_CONNECTED) {
+        delay(1000);
+        count++;
+        Serial.print(".");
+        if(count>3)break;
+    }
+}
+
 void WiFiManager::update() {
     // 更新は最低1秒は空ける
     if(millis() - previousTryMillis < 1000)return;
@@ -31,14 +58,6 @@ void WiFiManager::update() {
         Serial.print("try to connect WiFi .");
 
         WiFi.begin(ssid, password);
-
-        int count = 0;
-        while (WiFi.status() != WL_CONNECTED) {
-            delay(1000);
-            count++;
-            Serial.print(".");
-            if(count>3)break;
-        }
     }
     
     String strongness = "圏外";

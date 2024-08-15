@@ -9,6 +9,7 @@
 class WiFiManager {
 public:
     WiFiManager();
+    void begin();
     void update();
     void drawWiFiIcon();
     bool isConnected() const { return _isConnected; }
