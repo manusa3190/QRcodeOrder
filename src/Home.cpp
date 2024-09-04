@@ -13,7 +13,7 @@ void Home::setupButtons() {
         "新規注文",
         20, 200, 120, 30,
         [this]() { nextPage = 1; },
-        WHITE, WHITE, 1.4
+        WHITE, BLACK, 1.4
     );
 
     deliveryButton = Button(
@@ -33,7 +33,6 @@ int Home::show() {
     while (true) {
         M5.update();
         
-        wifiManager.handleClient();
         wifiManager.update();
 
         bool hasUpdate = fetchOrderHistory(); // DBからデータを取得してorderHistoryにセット
@@ -54,7 +53,6 @@ int Home::show() {
         deliveryButton.update();
 
         if (nextPage != 0) {
-            Serial.println("ページ遷移!");
             return nextPage;  // ページ遷移
         }
     }

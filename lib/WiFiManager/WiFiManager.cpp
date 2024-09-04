@@ -18,7 +18,16 @@ void WiFiManager::begin() {
 
     Serial.println("ssid: "+ ssid);
     Serial.println("password: "+ password);
-    Serial.print("try to connect WiFi .");
+    Serial.print("WiFi接続トライ");
+
+    int W = CoreS3.Display.width();
+    int H = CoreS3.Display.height();
+    CoreS3.Display.fillScreen(BLACK);
+    CoreS3.Display.setTextDatum(MC_DATUM);
+    CoreS3.Display.setTextSize(2);
+    CoreS3.Display.setTextColor(WHITE);
+    CoreS3.Display.drawString("WiFi接続中",W/2,H/2-20);
+    CoreS3.Display.drawString("SSID: "+ ssid,W/2,H/2+20);    
 
     WiFi.begin(ssid, password);
 
@@ -27,18 +36,25 @@ void WiFiManager::begin() {
         delay(1000);
         count++;
         Serial.print(".");
-        if(count>3)break;
+        if(count>3){
+            Serial.println('WiFi接続失敗!!');
+            CoreS3.Display.fillRect( (W-240)/2,(H-100)/2, 240,100, BLACK);
+            CoreS3.Display.drawString("WiFi接続失敗!!",W/2,H/2);
+            break;
+        }
     }
+
 }
 
 void WiFiManager::update() {
-    // 更新は最低1秒は空ける
-    if(millis() - previousTryMillis < 1000)return;
+    // 更新は最低2秒は空ける
+    if(millis() - previousTryMillis < 2000)return;
     previousTryMillis = millis();
 
-    // APモードの時はWiFi接続にトライしない
-    if(apModeActive)return;
-
+    // APモードの時はWiFi接続にトライせず、handleClientに徹する
+    while(apModeActive){
+        handleClient();
+    }
 
     _isConnected = WiFi.status() == WL_CONNECTED;
 
@@ -124,9 +140,6 @@ void WiFiManager::startAPMode() {
         String newSSID = server.arg("ssid");
         String newPassword = server.arg("password");
 
-        newSSID = "9QHO794U-2.4G";
-        newPassword = "24622582";
-
         // 新しい認証情報で接続チェック
         Serial.println("newSSID: " + newSSID);
         Serial.println("newPassword: " + newPassword);
@@ -207,14 +220,20 @@ void WiFiManager::handleClient() {
 
 void WiFiManager::showWiFiDialog() {
     // ダイアログの背景を描画
-    CoreS3.Display.fillRect(60, 60, 200, 120, DARKGREY);
-    CoreS3.Display.drawRect(60, 60, 200, 120, WHITE);
+    const int W = CoreS3.Display.width();
+    const int H = CoreS3.Display.height();
+    int x = (W-240)/2;
+    int y = (H-150)/2;
+    CoreS3.Display.fillRect(x, y, 240, 150, DARKGREY);
+    CoreS3.Display.drawRect(x, y, 240, 150, WHITE);
 
     // ダイアログのタイトルを描画
-    CoreS3.Display.setTextSize(1);
+    CoreS3.Display.setTextSize(1.5);
     CoreS3.Display.setTextColor(WHITE);
     CoreS3.Display.setTextDatum(TC_DATUM);
-    CoreS3.Display.drawString("WiFi", 160, 70);
+    CoreS3.Display.drawString("WiFi", W/2, y);
+
+    y += 25;
 
     // 現在の接続状態を表示
     CoreS3.Display.setTextDatum(TL_DATUM);
@@ -224,17 +243,24 @@ void WiFiManager::showWiFiDialog() {
         String ssid = preferences.getString("ssid","");
         connectStatus = "接続中: " + ssid;
     }
-    CoreS3.Display.drawString(connectStatus, 70, 90);
+    CoreS3.Display.setTextSize(1);
+    CoreS3.Display.drawString(connectStatus, x+20, y);
 
-    CoreS3.Display.setTextSize(0.7);
-    CoreS3.Display.drawString("この画面を閉じるにはリセットしてください", 70, 120);
+    y += 30;
+
+    CoreS3.Display.setTextSize(1);
+    CoreS3.Display.drawString("この画面を閉じるには", x+10, y);
+    y += 20;
+    CoreS3.Display.drawString("リセットしてください", x+10, y);
+
+    y += 30;
 
     // ボタンを描画
     CoreS3.Display.setTextSize(1);
     CoreS3.Display.setTextDatum(MC_DATUM);
-    CoreS3.Display.fillRect(70, 140, 160, 30, BLUE);
-    CoreS3.Display.drawRect(70, 140, 160, 30, WHITE);
-    CoreS3.Display.drawString("接続先変更",70+160/2, 140+30/2);
+    CoreS3.Display.fillRect(70, y, 160, 30, BLUE);
+    CoreS3.Display.drawRect(70, y, 160, 30, WHITE);
+    CoreS3.Display.drawString("接続先変更",70+160/2, y+30/2);
 
     // ユーザーの入力を待つ
     while (true) {

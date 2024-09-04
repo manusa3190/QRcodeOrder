@@ -1,0 +1,10 @@
+{
+    "name":"AppSheet",
+    "version":"1.0.0",
+    "description":"AppSheetをDBとして使う",
+    "keywords":"AppSheet, appsheet",
+    "authors":[{"name":"manusa3190","email":"zhitain_xiongtai@yahoo.co.jp"}],
+    "repository":{"type":"git","url":"https://github.com/yourusername/mylibrary"},
+    "frameworks":["arduino","espidf"],
+    "platforms":["espressif32"]
+}

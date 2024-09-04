@@ -31,7 +31,7 @@ void setup(){
   const char* TABLE_NAME = "備品マスタ";
   const char* selector = "FILTER('備品マスタ', IN('実験室', [格納場所]))";
 
-  DynamicJsonDocument items = appsheet.getItems(TABLE_NAME,selector);
+  JsonDocument items = appsheet.getItems(TABLE_NAME,selector);
 
   serializeJsonPretty(items, Serial);
 }
